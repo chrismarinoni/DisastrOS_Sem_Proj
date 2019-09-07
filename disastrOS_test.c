@@ -18,10 +18,16 @@ void childFunction(void* args){
   printf("I will iterate a bit, before terminating\n");
   int type=0;
   int mode=0;
+
+  printf("Sto per fare SemOpen!\n");
+  int ciao = disastrOS_semOpen(1,2);
+  //printf("Sto per fare SemClose!\n");
+  //disastrOS_semClose(ciao);
+
   int fd=disastrOS_openResource(disastrOS_getpid(),type,mode);
   printf("fd=%d\n", fd);
   printf("PID: %d, terminating\n", disastrOS_getpid());
-
+  
   for (int i=0; i<(disastrOS_getpid()+1); ++i){
     printf("PID: %d, iterate %d\n", disastrOS_getpid(), i);
     disastrOS_sleep((20-disastrOS_getpid())*5);

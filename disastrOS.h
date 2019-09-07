@@ -28,6 +28,10 @@ void disastrOS_preempt();
 void disastrOS_spawn(void (*f)(void*), void* args );
 void disastrOS_shutdown();
 
+// semaphores
+int disastrOS_semOpen();
+int disastrOS_semClose();
+
 // timers
 void disastrOS_sleep(int);
 
