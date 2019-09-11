@@ -22,11 +22,9 @@ void internal_semClose(){
 	
 	List_detach(&running->sem_descriptors, (ListItem *)semDesc);
 	
-	if(DEBUG) printf("Test 1\n");
-
 	Semaphore* sem = semDesc->semaphore;
 		
-	if(sem==0){
+	if(!sem){
 		printf("[SEM_ERR] I wasn't able to get the semaphore to destroy!\n");
 		running->syscall_retvalue = DSOS_ESEMCLOSE_NOT_FOUND;
 		return;
@@ -39,47 +37,32 @@ void internal_semClose(){
 		running->syscall_retvalue = DSOS_ESEMCLOSE_NOT_FOUND;
 		return;
 	}
-
-	List_detach(&running->sem_descriptors, (ListItem*) semDesc); 
-	List_detach(&semaphores_list, (ListItem*) sem);
-	
-	if(DEBUG) printf("Test 2\n");
-	
-	int ret;
 	
 	SemDescriptor_free(semDesc);
 	SemDescriptorPtr_free(semDescPtr);
-
+	
+	
+	int ret;
 	
 	if(sem->descriptors.size == 0 && sem->waiting_descriptors.size == 0){
 		
+		List_detach(&semaphores_list, (ListItem*) sem);
+
 		ret = Semaphore_free(sem);
-		
-		if(DEBUG) printf("Test 3\n");
-		
-		if(ret == 0){
+				
+		if(ret != 0x0){
 			printf("[SEM_ERR] Semaphore_free failed!\n");
+			running->syscall_retvalue = DSOS_ESEMCLOSE_FREE_ERR;
+			return;
 		}
 	}
-	
-	//SemDescriptorPtr* semDescPtr = semDesc->ptr;
-	
-	
 		
-	List_detach(&running->descriptors, (ListItem*) semDescPtr);
 	
+	running->syscall_retvalue = 0;
 	
+	printf("[SEM_INFO] Semaphore with fd %d has been correctly closed\n", fd);
 	
-	
-	
-	
-	
-	
-	if(ret != 0){
-		printf("[SEM_ERR] Semaphore_free failed! Error Code: %d - see PoolAllocatorResult for more details.\n", ret);
-		running->syscall_retvalue = DSOS_ESEMCLOSE_FAILED;
-		return;
-	}
+	return;
 		
 	
 }
