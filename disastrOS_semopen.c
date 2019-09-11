@@ -86,7 +86,7 @@ void internal_semOpen(){
 	// We will use that number incremented by one.
 	/// CONTROLLA FUNZIONAMENTO LAST_SEM_FD
 	
-	SemDescriptor* semDesc = SemDescriptor_alloc(++running->last_sem_fd, sem, running);
+	SemDescriptor* semDesc = SemDescriptor_alloc(running->last_sem_fd++, sem, running);
 	
 	// Check if semDesc has been correctly allocated, and in case of
 	// success add it to the sem_descriptor list.
@@ -96,7 +96,7 @@ void internal_semOpen(){
 		running->syscall_retvalue = DSOS_ESEMOPEN_DESC_ALLOC;
 		return;
 	}
-	
+		
 	List_insert(&running->sem_descriptors, running->sem_descriptors.last, (ListItem*) semDesc);	
 	
 	// Finally a semDescriptorPtr must be allocated and included in the 
@@ -110,7 +110,9 @@ void internal_semOpen(){
 		return;
 	}
 	
-	List_insert(&running->descriptors, running->descriptors.last, (ListItem*) semDescPtr);
+	semDesc->ptr = semDescPtr;
+	
+	List_insert(&sem->descriptors, sem->descriptors.last, (ListItem*) semDescPtr);
 	
 	// We have accomplished all requirements for the SemOpen. The retvalue
 	// can now be set to the fd of the semaphore.
