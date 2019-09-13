@@ -1,4 +1,4 @@
-#include <sys/types.h>
+	 #include <sys/types.h>
 #include <sys/time.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -314,6 +314,14 @@ int disastrOS_semOpen(int id, int count) {
 
 int disastrOS_semClose(int id) {
   return disastrOS_syscall(DSOS_CALL_SEMCLOSE, id);
+}
+
+int disastrOS_semPost(int id) {
+  return disastrOS_syscall(DSOS_CALL_SEMPOST, id);
+}
+
+int disastrOS_semWait(int id) {
+  return disastrOS_syscall(DSOS_CALL_SEMWAIT, id);
 }
 
 

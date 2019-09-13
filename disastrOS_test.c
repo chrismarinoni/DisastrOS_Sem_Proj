@@ -4,6 +4,16 @@
 
 #include "disastrOS.h"
 
+#define sizeOfBuffer 50
+#define DEBUG 1
+
+int to_write = 0;
+
+int sem_read, sem_write, sem_empty, sem_filled;
+int buffer[sizeOfBuffer];
+int read_index = 0, write_index = 0;
+
+
 // we need this to handle the sleep state
 void sleeperFunction(void* args){
   printf("Hello, I am the sleeper, and I sleep %d\n",disastrOS_getpid());
@@ -13,16 +23,67 @@ void sleeperFunction(void* args){
   }
 }
 
+void producer() {
+	
+	
+	if(DEBUG) printf("Sto nel producer\n");		
+	disastrOS_semWait(sem_empty);
+	disastrOS_semWait(sem_write);
+	
+	buffer[write_index] = to_write;
+	to_write++;
+	write_index = (write_index+1) % sizeOfBuffer;
+	printf("[SEM_INFO] Il figlio #%d Un nuovo dato è stato prodotto!\n", disastrOS_getpid());
+	
+	disastrOS_semPost(sem_write);
+	disastrOS_semPost(sem_filled); 
+	
+	
+}
+
+void consumer() {
+			
+	if(DEBUG) printf("Sto nel consumer\n");
+	disastrOS_semWait(sem_filled);
+	disastrOS_semWait(sem_read);
+	
+	int value = buffer[read_index];
+	read_index = (read_index+1) % sizeOfBuffer;
+	printf("[SEM_INFO] Il figlio #%d ha letto il valore %d come nuovo dato!\n", disastrOS_getpid(),  value );
+	
+	disastrOS_semPost(sem_read);
+	disastrOS_semPost(sem_empty); 
+	
+	
+}
+
 void childFunction(void* args){
   printf("Hello, I am the child function %d\n",disastrOS_getpid());
   printf("I will iterate a bit, before terminating\n");
   int type=0;
   int mode=0;
 
-  printf("Sto per fare SemOpen!\n");
-  int ciao = disastrOS_semOpen(1,2);
-  //printf("Sto per fare SemClose!\n");
-  //disastrOS_semClose(ciao);
+  int sem_read = disastrOS_semOpen(1, 1);
+  int sem_write = disastrOS_semOpen(2, 1);
+  int sem_filled = disastrOS_semOpen(3, 0);
+  int sem_empty = disastrOS_semOpen(4, sizeOfBuffer);
+  
+  for(int i = 0; i < 3*sizeOfBuffer; i++){
+
+	if(i%2 == 0){
+		if(DEBUG) printf("Sono diventato consumer #%d\n", disastrOS_getpid());
+		consumer();
+	}else{
+		if(DEBUG) printf("Sono diventato producer #%d\n", disastrOS_getpid());
+		producer();
+	}
+	
+  }
+  disastrOS_semClose(sem_read);
+  disastrOS_semClose(sem_write);
+  disastrOS_semClose(sem_filled);
+  disastrOS_semClose(sem_empty);
+  
 
   int fd=disastrOS_openResource(disastrOS_getpid(),type,mode);
   printf("fd=%d\n", fd);
