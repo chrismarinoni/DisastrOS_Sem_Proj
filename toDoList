@@ -1,45 +1,46 @@
 _________________
 **** SemOPEN ****
 
-- Check how descriptors are used in DisastrOS
-
+-
 __________________
 **** SemCLOSE ****
 
-- For now everything seems ok.
-
+- Add comments
+- Improve readability
 _________________
 **** SemPOST ****
 
--
+- Add comments
+- Improve readability
 
 _________________
 **** SemWAIT ****
 
--
+- Add comments
+- Improve readability
 
 
-|=========== PROGRESS: 40% ===========|
-                     ___                                  
-                   .'   '.                                
-                  /       \           oOoOo               
-                 |         |       ,==|||||               
-                  \       /       _|| |||||               
-                   '.___.'    _.-'^|| |||||               
-                 __/_______.-'     '==HHHHH               
-            _.-'` /                   """""               
-         .-'     /   oOoOo                                
-         `-._   / ,==|||||                                
-             '-/._|| |||||                                
-              /  ^|| |||||                                
-             /    '==HHHHH                                
-            /________"""""                                
-            `\       `\                                   
-              \        `\   /                             
-               \         `\/                              
-               /                                          
-              /                                           
-             /_____   
+|=========== PROGRESS: 99% ===========|
+                  ___                                  
+                .'   '.                                
+               /       \           oOoOo               
+              |         |       ,==|||||               
+               \       /       _|| |||||               
+                '.___.'    _.-'^|| |||||               
+              __/_______.-'     '==HHHHH               
+         _.-'` /                   """""               
+      .-'     /   oOoOo                                
+      `-._   / ,==|||||                                
+          '-/._|| |||||                                
+           /  ^|| |||||                                
+          /    '==HHHHH                                
+         /________"""""                                
+         `\       `\                                   
+           \        `\   /                             
+            \         `\/                              
+            /                                          
+           /                                           
+          /_____   
 
 
  

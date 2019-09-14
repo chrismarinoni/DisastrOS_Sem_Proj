@@ -13,7 +13,7 @@ void internal_semPost(){
 	SemDescriptor* semDesc = SemDescriptorList_byFd(&running->sem_descriptors, fd);
 	
 	if(!semDesc){
-		printf("[SEM_ERR] Trying to close a non-existing semaphore!\n");
+		printf("[SEM_ERR] Trying to Post on non-existing semaphore!\n");
 		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_EXIST;
 		return;
 	}
@@ -21,11 +21,12 @@ void internal_semPost(){
 	Semaphore* sem = semDesc->semaphore;
 		
 	if(!sem){
-		printf("[SEM_ERR] I wasn't able to get the semaphore to destroy!\n");
+		printf("[SEM_ERR] I wasn't able to get the semaphore where to Post!\n");
 		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_FOUND;
 		return;
 	}
 	
+	/*
 	SemDescriptorPtr* semDescPtr = semDesc->ptr;
 					
 	if(!semDescPtr){
@@ -33,15 +34,22 @@ void internal_semPost(){
 		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_FOUND;
 		return;
 	}
+	*/
 	
-	
-	if(++sem->count <= 0) {
-		List_insert(&ready_list, ready_list.last, (ListItem*) running);
-		List_insert(&sem->descriptors, sem->descriptors.last, (ListItem*)semDescPtr);
-		List_detach(&waiting_list, (ListItem*)semDesc->pcb);
-		running->status = Ready;
-		running = semDesc->pcb;
+	if(++(sem->count) <= 0) {
+		SemDescriptorPtr* processDescPtr = (SemDescriptorPtr*) List_detach(&sem->waiting_descriptors, (ListItem*) sem->waiting_descriptors.first);
+		List_insert(&sem->descriptors, sem->descriptors.last, (ListItem*) processDescPtr);
+		processDescPtr->descriptor->pcb->status = Ready;
+		
+		List_detach(&waiting_list, (ListItem*)processDescPtr->descriptor->pcb);
+
+		List_insert(&ready_list, ready_list.last, (ListItem*) processDescPtr->descriptor->pcb);
 		
 	}
+	
+	printf("[SEM_INFO]tThread #%d has correctly launched a semPost on sem id #%d\n", disastrOS_getpid(), fd);
+	
+	running->syscall_retvalue = 0;
+	return;
   
 }
