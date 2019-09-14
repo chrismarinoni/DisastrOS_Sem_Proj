@@ -38,10 +38,9 @@ void internal_semClose(){
 		return;
 	}
 	
-	SemDescriptor_free(semDesc);
 	SemDescriptorPtr_free(semDescPtr);
-	
-	
+	SemDescriptor_free(semDesc);
+		
 	int ret;
 	
 	if(sem->descriptors.size == 0 && sem->waiting_descriptors.size == 0){
@@ -55,14 +54,18 @@ void internal_semClose(){
 			running->syscall_retvalue = DSOS_ESEMCLOSE_FREE_ERR;
 			return;
 		}
-	}
 		
+		disastrOS_printStatus();
+
+	}
 	
+	
+	running->last_sem_fd--;
+
 	running->syscall_retvalue = 0;
 	
 	printf("[SEM_INFO] Semaphore with fd %d has been correctly closed\n", fd);
 	
-	return;
-		
+	
 	
 }

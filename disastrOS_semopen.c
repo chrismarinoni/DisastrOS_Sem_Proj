@@ -27,14 +27,9 @@ void internal_semOpen(){
 	int id = running->syscall_args[0];
 	int count = running->syscall_args[1];
 	
-	// Count represent the number of threads that can simultaneosly work
-	// on the same resourse (entering in the critical section). Must be 
-	// greater than zero.
-	// If equal to (or lower than) zero, returning value is set to
-	// DSOS_ESEMOPEN_WRONG_INIT.
-	// Id has to be positive too.
+	// ID must be positive
 	
-	if(count <= 0 || id < 0){
+	if(id < 0){
 		printf("[SEM_ERROR] - Error allocating semaphore (id #%d) due to "
 		"configuration error: COUNT must be greater than zero and ID greater than (or equal to) zero \n", id);
 		running->syscall_retvalue = DSOS_ESEMOPEN_WRONG_INIT;
@@ -53,7 +48,8 @@ void internal_semOpen(){
 	if(DEBUG) printf("Test 1, %d\n", sem);
 
 	
-	if(!sem){
+	if(sem == NULL){
+		printf("*** [SEM_INFO] I'm going to allocate a new semaphore! ***\n");
 		sem = Semaphore_alloc(id, count);
 		if(DEBUG) printf("Test 1, %d\n", sem);
 		if(!sem) {
@@ -61,11 +57,13 @@ void internal_semOpen(){
 			running->syscall_retvalue = DSOS_ESEMOPEN_ALLOC;
 			return;
 		}
-	} else {
-		printf("[SEM_ERR] - Semaphore allocation failed: the semaphore with the specified id already exists\n");
-		running->syscall_retvalue = DSOS_ESEMOPEN_EXISTS;
-		return;
-		/// HA SENSO FARE QUESTA OPERAZIONE? CONTROLLA BENE
+		SemDescriptor* ins = (SemDescriptor*) List_insert(&semaphores_list, semaphores_list.last, (ListItem*) sem);
+		if(!ins) {
+			printf("[SEM_ERR] Error while inserting the semaphore in semaphore_list.\n");
+			running->syscall_retvalue = DSOS_ESEMOPEN_LIST_INSERT_FAILED;
+		} else 
+			printf("[SEM_INFO] Semaphore id #%d has been correctly created. Remember: always drive with the safety belt! ;)\n", id);
+		
 	}
 	
 	if(DEBUG) printf("Test 2\n");
@@ -73,12 +71,6 @@ void internal_semOpen(){
 	// The semaphore has been created, so it can be added to the
 	// SemaphoreList
 	
-	SemDescriptor* ins = (SemDescriptor*) List_insert(&semaphores_list, semaphores_list.last, (ListItem*) sem);
-	if(!ins) {
-		printf("[SEM_ERR] Error while inserting the semaphore in semaphore_list.\n");
-		running->syscall_retvalue = DSOS_ESEMOPEN_LIST_INSERT_FAILED;
-	} else 
-		printf("[SEM_INFO] Semaphore id #%d has been correctly created. Remember: always drive with the safety belt! ;)\n", id);
 	
 	// We need to allocate the descriptor associated to the new semaphore
 	// Inside the PCB of the running process we have an int variable called
@@ -86,7 +78,7 @@ void internal_semOpen(){
 	// We will use that number incremented by one.
 	/// CONTROLLA FUNZIONAMENTO LAST_SEM_FD
 	
-	SemDescriptor* semDesc = SemDescriptor_alloc(running->last_sem_fd++, sem, running);
+	SemDescriptor* semDesc = SemDescriptor_alloc(running->last_sem_fd, sem, running);
 	
 	// Check if semDesc has been correctly allocated, and in case of
 	// success add it to the sem_descriptor list.
@@ -96,9 +88,7 @@ void internal_semOpen(){
 		running->syscall_retvalue = DSOS_ESEMOPEN_DESC_ALLOC;
 		return;
 	}
-		
-	List_insert(&running->sem_descriptors, running->sem_descriptors.last, (ListItem*) semDesc);	
-	
+				
 	// Finally a semDescriptorPtr must be allocated and included in the 
 	// list of all descriptors contained in the PCB.
 	
@@ -110,14 +100,19 @@ void internal_semOpen(){
 		return;
 	}
 	
-	semDesc->ptr = semDescPtr;
+	List_insert(&running->sem_descriptors, running->sem_descriptors.last, (ListItem*) semDesc);	
+
+	semDesc->ptr = semDescPtr;	
 	
 	List_insert(&sem->descriptors, sem->descriptors.last, (ListItem*) semDescPtr);
+	
+	(running->last_sem_fd)++;
+
 	
 	// We have accomplished all requirements for the SemOpen. The retvalue
 	// can now be set to the fd of the semaphore.
 	
 	running->syscall_retvalue = semDesc->fd;
-	return;
 	
+	disastrOS_printStatus();
 }
