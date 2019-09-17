@@ -26,7 +26,7 @@ void sleeperFunction(void* args){
 void producer() {
 		
 		
-	if(DEBUG) printf("Sto nel producer, figlio #%d\n", disastrOS_getpid());
+	if(DEBUG) printf("I am a producer, child #%d\n", disastrOS_getpid());
 	disastrOS_semWait(sem_empty);
 	disastrOS_semWait(sem_write);
 		
@@ -34,7 +34,7 @@ void producer() {
 	to_write++;
 	write_index = (write_index+1) % BUFFER_SIZE;
 	printf("write %d\n", write_index);
-	printf("[SEM_INFO] Il figlio #%d ha prodotto il valore %d!\n", disastrOS_getpid(), to_write-1);
+	printf("[SEM_INFO] Child #%d produced the value %d!\n", disastrOS_getpid(), to_write-1);
 	
 	disastrOS_sleep(10);
 	
@@ -46,7 +46,7 @@ void producer() {
 void consumer() {
 		
 		
-		if(DEBUG) printf("Sto nel consumer, figlio #%d\n", disastrOS_getpid());
+		if(DEBUG) printf("I am an hungry consumer, child #%d\n", disastrOS_getpid());
 		disastrOS_semWait(sem_filled);
 		disastrOS_semWait(sem_read);
 		
@@ -56,7 +56,7 @@ void consumer() {
 		disastrOS_sleep(10);
 		
 		printf("read %d\n", read_index);
-		printf("[SEM_INFO] Il figlio #%d ha letto il valore %d come nuovo dato!\n", disastrOS_getpid(),  value );
+		printf("[SEM_INFO] Child #%d read the value %d from the buffer!\n", disastrOS_getpid(),  value );
 		
 		
 		disastrOS_semPost(sem_read);
@@ -94,10 +94,10 @@ void childFunction(void* args){
 	printf("PID: %d, iteration: %d\n", disastrOS_getpid(), i);
 
 	if(disastrOS_getpid()%2 == 0){
-		if(DEBUG) printf("Sono diventato consumer #%d\n", disastrOS_getpid());
+		if(DEBUG) printf("A set of zeros and ones baptized me! I'm now a ravenous consumer, #%d\n", disastrOS_getpid());
 		consumer();
 	}else{
-		if(DEBUG) printf("Sono diventato producer #%d\n", disastrOS_getpid());
+		if(DEBUG) printf("A set of zeros and ones made me part of the producers' elite! Give me a moment to move the registered office in Luxembourg to escape taxes! - #%d\n", disastrOS_getpid());
 		producer();
 	}
 	

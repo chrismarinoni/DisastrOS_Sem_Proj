@@ -115,4 +115,6 @@ void internal_semOpen(){
 	running->syscall_retvalue = semDesc->fd;
 	
 	disastrOS_printStatus();
+	
+	return;
 }

@@ -8,13 +8,22 @@
 
 void internal_semPost(){
   
-  int fd = running->syscall_args[0];
+	/**
+	   TO DO:
+		* decrements the given semaphore
+		* if the semaphore is 0, the caller is put onto wait
+		* returns an error code
+	**/
+	
+	// Same initial stuff 
+  
+	int fd = running->syscall_args[0];
 	
 	SemDescriptor* semDesc = SemDescriptorList_byFd(&running->sem_descriptors, fd);
 	
 	if(!semDesc){
 		printf("[SEM_ERR] Trying to Post on non-existing semaphore!\n");
-		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_EXIST;
+		running->syscall_retvalue = DSOS_ESEMPOST_NOT_EXIST;
 		return;
 	}
 	
@@ -22,19 +31,12 @@ void internal_semPost(){
 		
 	if(!sem){
 		printf("[SEM_ERR] I wasn't able to get the semaphore where to Post!\n");
-		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_FOUND;
+		running->syscall_retvalue = DSOS_ESEMPOST_NOT_FOUND;
 		return;
 	}
 	
-	/*
-	SemDescriptorPtr* semDescPtr = semDesc->ptr;
-					
-	if(!semDescPtr){
-		printf("[SEM_ERR] I wasn't able to get the semDescPtr!\n");
-		running->syscall_retvalue = DSOS_ESEMWAIT_NOT_FOUND;
-		return;
-	}
-	*/
+	// Increment count by one and check if <= 0.
+	// If true, we put a waiting process in the Ready queue
 	
 	if(++(sem->count) <= 0) {
 		SemDescriptorPtr* processDescPtr = (SemDescriptorPtr*) List_detach(&sem->waiting_descriptors, (ListItem*) sem->waiting_descriptors.first);
@@ -50,6 +52,7 @@ void internal_semPost(){
 	printf("[SEM_INFO]tThread #%d has correctly launched a semPost on sem id #%d\n", disastrOS_getpid(), fd);
 	
 	running->syscall_retvalue = 0;
+	
 	return;
   
 }

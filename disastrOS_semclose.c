@@ -10,6 +10,17 @@
 
 void internal_semClose(){
 	
+	/**
+		TO DO:
+		* releases from an application the given semaphore
+		* returns 0 on success
+		* returns an error code if the semaphore is not owned by the 
+		* application
+	**/ 
+	
+	// Get fd and use it to obtain the related semDescriptor 
+	// (with error handling)
+	
 	int fd = running->syscall_args[0];
 	
 	SemDescriptor* semDesc = SemDescriptorList_byFd(&running->sem_descriptors, fd);
@@ -20,7 +31,12 @@ void internal_semClose(){
 		return;
 	}
 	
+	// We don't need this semaphore anymore in the running proccess, so
+	// the semDescriptor is removed by the list
+	
 	List_detach(&running->sem_descriptors, (ListItem *)semDesc);
+	
+	// Get the semaphore from the Descriptor
 	
 	Semaphore* sem = semDesc->semaphore;
 		
@@ -30,6 +46,10 @@ void internal_semClose(){
 		return;
 	}
 	
+	// Since the descriptor has been removed, the same must be done with 
+	// the pointer to the descriptor that is contained in the descriptor
+	// list of semaphore
+	
 	SemDescriptorPtr* semDescPtr = (SemDescriptorPtr*)List_detach(&sem->descriptors, (ListItem*)(semDesc->ptr));
 					
 	if(!semDescPtr){
@@ -38,8 +58,17 @@ void internal_semClose(){
 		return;
 	}
 	
+	// The last step is to deallocate the structs of the descriptor 
+	// and its pointer
+	
 	SemDescriptorPtr_free(semDescPtr);
 	SemDescriptor_free(semDesc);
+	
+	// We have to lists in the semaphore: one of all active Descriptors 
+	// (Ptrs), one of those associated to process waiting to gain access
+	// to the critical section.
+	// So, we need to completely deallocate the semaphore only if
+	// no other processes are using it.
 		
 	int ret;
 	
@@ -59,6 +88,7 @@ void internal_semClose(){
 
 	}
 	
+	// Decrement last_sem_fd and return 0
 	
 	running->last_sem_fd--;
 
@@ -66,6 +96,6 @@ void internal_semClose(){
 	
 	printf("[SEM_INFO] Semaphore with fd %d has been correctly closed\n", fd);
 	
-	
+	return;
 	
 }

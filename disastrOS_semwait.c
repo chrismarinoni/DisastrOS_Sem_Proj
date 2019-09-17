@@ -8,6 +8,16 @@
 
 void internal_semWait(){
 	
+	/**
+	   TO DO:
+		* increments the given semaphore
+		* if the semaphore was at 0, and some other thread was waiting
+		* the thread is resumed
+		* returns 0 on success, an error code on failure 
+	**/
+	
+	// Same initial stuff 
+	
 	int fd = running->syscall_args[0];
 	
 	SemDescriptor* semDesc = SemDescriptorList_byFd(&running->sem_descriptors, fd);
@@ -34,9 +44,12 @@ void internal_semWait(){
 		return;
 	}
 	
+	// Decrement count and check if < 0.
+	// If true, we operate a context switch by putting the current process
+	// in the waiting queue and taking the next process to run from the
+	// Ready queue. 
 	
 	if(--(sem->count) < 0) {
-		printf("MI METTO IN PAUSA!\n");
 		SemDescriptorPtr* aux = (SemDescriptorPtr*) List_detach(&sem->descriptors, (ListItem*) semDescPtr);
 		List_insert(&sem->waiting_descriptors, sem->waiting_descriptors.last, (ListItem*) semDescPtr);
 		running->status = Waiting;
@@ -45,7 +58,7 @@ void internal_semWait(){
 		running = pcb_aux;
 	}
 	
-	printf("[SEM_INFO]tThread #%d has correctly launched a semWait on sem id #%d\n", disastrOS_getpid(), fd);
+	printf("[SEM_INFO]Thread #%d has correctly launched a semWait on sem id #%d\n", disastrOS_getpid(), fd);
 	
 	running->syscall_retvalue = 0;
 	return;
