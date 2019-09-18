@@ -6,7 +6,6 @@
 #include "disastrOS_semaphore.h"
 #include "disastrOS_semdescriptor.h"
 
-#define DEBUG 0
 
 void internal_semOpen(){
 	
@@ -45,13 +44,10 @@ void internal_semOpen(){
 	
 	Semaphore* sem = SemaphoreList_byId(&semaphores_list, id);
 	
-	if(DEBUG) printf("Test 1, %d\n", sem);
-
 	
 	if(sem == NULL){
 		printf("*** [SEM_INFO] I'm going to allocate a new semaphore! ***\n");
 		sem = Semaphore_alloc(id, count);
-		if(DEBUG) printf("Test 1, %d\n", sem);
 		if(!sem) {
 			printf("[SEM_ERR] - Error while allocating semaphore id #%d\n", id);
 			running->syscall_retvalue = DSOS_ESEMOPEN_ALLOC;
@@ -66,7 +62,6 @@ void internal_semOpen(){
 		
 	}
 	
-	if(DEBUG) printf("Test 2\n");
 	
 	// The semaphore has been created, so it can be added to the
 	// SemaphoreList
